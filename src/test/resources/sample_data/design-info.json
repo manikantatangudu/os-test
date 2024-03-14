@@ -1,0 +1,8 @@
+{
+  "sampleData": {
+    "150a4c88-1a82-4595-98c4-21863eb65916": {
+      "payload": "sample_data/java.dwl",
+      "vars-state": "sample_data/java_1.dwl"
+    }
+  }
+}

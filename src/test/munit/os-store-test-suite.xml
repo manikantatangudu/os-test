@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="   http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd   http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd   http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="os-store-test-suite.xml"/>
+	<munit:test description="Test" doc:id="bb2789c3-6ec9-4d8f-8cf2-bd3fcc9a0d98" name="not-contains-state-Test">
+		<munit:behavior>
+			<munit:set-event doc:id="7708e9d1-52f8-4fd4-9d91-14f2ccdb81d5" doc:name="Set Event">
+				<munit:payload value="#[&quot;shsethwth&quot;]"/>
+				<munit:attributes value="#[{&#10; &quot;queryParams&quot;:{&#10;  &quot;state&quot;: &quot;karnataka&quot;,&#10;  &quot;code&quot;: &quot;KA&quot;&#10; }&#10;}]"/>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="13251497-0d60-4d16-9fb0-7f4b39de9d17" doc:name="Flow-ref to os-testFlow" name="os-testFlow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="b2f16608-4731-482a-b76f-7c327aa72f83" doc:name="Verify call" processor="os:store">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:name" whereValue="Store"/>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="bce15cbb-9030-406f-86b6-b6ceab3a61bc"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="c341d4d3-07da-491a-b9ef-591d9992be15" name="state-code-contains-Test">
+		<munit:behavior>
+			<munit:set-event doc:id="906a4ea0-e5a9-4cb5-80db-764f7c435363" doc:name="Set Event">
+				<munit:payload value="#[&quot;shsethwth&quot;]"/>
+				<munit:attributes value="#[{&#10; &quot;queryParams&quot;:{&#10;  &quot;state&quot;: &quot;karnataka&quot;,&#10;  &quot;code&quot;: &quot;KA&quot;&#10; }&#10;}]"/>
+			</munit:set-event>
+			<munit-tools:mock-when doc:id="cf3cbb8c-e23d-487c-b860-ac97ccb2e031" doc:name="Mock when" processor="os:contains">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:name" whereValue="Contains"/>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="4aba70c4-6802-48a1-a6e3-245126e57723"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[true]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="df38b095-5c2d-4d81-8e25-7cff93d43c73" doc:name="Flow-ref to os-testFlow" name="os-testFlow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="e08a2f97-9d1e-4877-81b3-9c88ce2e0a30" doc:name="Verify call" processor="ee:transform">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:name" whereValue="Transform Message"/>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="d8aefaf3-e998-4f35-a878-653bc68d1563"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

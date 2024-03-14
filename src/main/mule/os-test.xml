@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7dbd8eb7-8e64-4558-ac68-0476536ed9c0" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<os:object-store name="States_Object_store" doc:name="Object store" doc:id="0c979f7d-6cd3-4da3-895a-06301434196f" maxEntries="30" entryTtl="10" entryTtlUnit="DAYS" expirationInterval="10" />
+	<global-property doc:name="Global Property" doc:id="95e7f580-a435-4bda-b3a8-dba0a8451581" name="http.host" value="0.0.0.0" />
+	<global-property doc:name="Global Property" doc:id="e412c350-e600-4b91-ad2d-c2a4ff135242" name="http.port" value="8081" />
+	<api-gateway:autodiscovery apiId="19352995" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="7486b689-f36d-4ecd-8e0a-29c65c5ec305" flowRef="os-testFlow" />
+	<flow name="os-testFlow" doc:id="7c6da0f4-bad5-4680-8d9e-6a57040b268e" maxConcurrency="10">
+		<http:listener doc:name="Listener" doc:id="26960b4c-3b38-4417-a44e-b7ae334b8ae3" config-ref="HTTP_Listener_config" path="/store"/>
+		<set-variable value="#[attributes.queryParams.state]" doc:name="Set Variable" doc:id="063a67ce-a5ae-4e22-b4e9-5f5efbe7b817" variableName="state"/>
+		<set-variable value="#[attributes.queryParams.code]" doc:name="Set Variable" doc:id="8e6555e8-5510-4587-81cd-4ef39e72979c" variableName="code"/>
+		<os:contains doc:name="Contains" doc:id="4aba70c4-6802-48a1-a6e3-245126e57723" key='#[attributes.queryParams.state]' objectStore="States_Object_store" />
+		<choice doc:name="Choice" doc:id="978a8536-b35b-49fb-8daa-7df360c873d2" >
+			<when expression="#[payload == true]">
+				<logger level="INFO" doc:name="Logger" doc:id="f239d857-1172-4a34-a3d2-dd5b7a06a680" message="Record already present. No need to store again"/>
+			</when>
+			<otherwise >
+				<os:store doc:name="Store" doc:id="bce15cbb-9030-406f-86b6-b6ceab3a61bc" key="#[vars.state]" objectStore="States_Object_store" failIfPresent="true">
+			<os:value><![CDATA[#[vars.code]]]></os:value>
+		</os:store>
+				<logger level="INFO" doc:name="Logger" doc:id="1016964f-a197-4e6f-a53f-b1180a994d0b" message="New record identified. Inserted to storage."/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="e4a6fe34-4e78-49f8-9993-1b219ff35134" message="Record inserted successfully"/>
+	</flow>
+	<flow name="os-testFlow1" doc:id="892d4d6d-2e81-4c8a-a130-930bf17ec5e3" >
+		<http:listener doc:name="Listener" doc:id="4215b1e4-e6d2-4035-a8a4-5197c4c13537" config-ref="HTTP_Listener_config" path="/retrieve"/>
+		<os:retrieve-all doc:name="Retrieve all" doc:id="b700c5d4-57d4-49e2-9b09-1e92db151af7" objectStore="States_Object_store"/>
+		<ee:transform doc:name="Transform Message" doc:id="d8aefaf3-e998-4f35-a878-653bc68d1563" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="os-testFlow2" doc:id="6454dc33-b2c7-4888-ba33-571d5081d833" >
+		<http:listener doc:name="Listener" doc:id="b6eee33e-8684-4521-abaa-92afee363021" config-ref="HTTP_Listener_config" path="/remove"/>
+		<os:remove doc:name="Remove" doc:id="3cba6e74-c1d0-4377-bf66-d39b6805d4a2" key="#[attributes.queryParams.state]" objectStore="States_Object_store"/>
+	</flow>
+</mule>
